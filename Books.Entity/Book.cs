@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Books.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Books.Api.Models
+namespace Books.Entity
 {
-    public class Book
+    public class Book : IEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }

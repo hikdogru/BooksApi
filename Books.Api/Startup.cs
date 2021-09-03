@@ -1,4 +1,7 @@
-using Books.Api.Models;
+using Books.Business.Abstract;
+using Books.Business.Concrete;
+using Books.Data.Abstract;
+using Books.Data.Concrete.Ef;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,6 +34,12 @@ namespace Books.Api
         {
             // DbContext
             services.AddDbContext<BookContext>(option => option.UseSqlServer(Configuration.GetConnectionString("BookConnection")));
+
+            // Service layer
+            services.AddScoped<IBookService, BookManager>();
+            // Data layer
+            services.AddScoped<IBookRepository, EfBookRepository>();
+           
 
             services.AddControllers();
 

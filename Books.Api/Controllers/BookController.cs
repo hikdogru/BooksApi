@@ -1,4 +1,6 @@
-﻿using Books.Api.Models;
+﻿using Books.Business.Abstract;
+using Books.Data.Concrete.Ef;
+using Books.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestSharp;
@@ -16,84 +18,67 @@ namespace Books.Api.Controllers
     [Route("api/[controller]")]
     public class BookController : ControllerBase
     {
-        private readonly BookContext _context;
+        private readonly IBookService _bookService;
 
-        public BookController(BookContext context)
+        public BookController(BookContext context, IBookService bookService)
         {
-            _context = context;
+            _bookService = bookService;
         }
 
 
         [HttpGet]
         public async Task<List<Book>> Get()
         {
-            var books = await _context.BookApi.FromSqlRaw("select Id, Name, Author, Publisher, Image from bookapi").ToListAsync();
-
-            //var client = new RestClient("https://my-json-server.typicode.com/hikdogru/angular-app/products");
-            //client.Timeout = -1;
-            //var request = new RestRequest(Method.GET);
-            //IRestResponse response = await client.ExecuteAsync(request);
-
-            //var content = response.Content;
-            //var jsonContent = await JsonSerializer.DeserializeAsync<List<Book>>(new MemoryStream(Encoding.UTF8.GetBytes(content)), new JsonSerializerOptions
-            //{
-            //    PropertyNameCaseInsensitive = true
-            //});
-            return books;
+            return await _bookService.GetAllBooksAsync();
         }
 
         [HttpGet("id")]
         public async Task<IActionResult> Get(int id)
         {
-            var book = await _context.BookApi.FindAsync(id);
+            var book = await _bookService.GetBookByIdAsync(id);
 
             if (book == null)
-                NotFound();
-
+                return NotFound();
 
             return Ok(book);
         }
 
-        [HttpPost]
-        public IActionResult Post(Book book)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.BookApi.Add(new Book { Author = book.Author, Name = book.Name, Image = book.Image, Publisher = book.Publisher });
-                _context.SaveChanges();
-            }
+        //[HttpPost]
+        //public IActionResult Post(Book book)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.BookApi.Add(new Book { Author = book.Author, Name = book.Name, Image = book.Image, Publisher = book.Publisher });
+        //        _context.SaveChanges();
+        //    }
 
-            else
-                return BadRequest("Invalid data");
+        //    else
+        //        return BadRequest("Invalid data");
 
-            return Ok();
+        //    return Ok();
 
-        }
+        //}
         [HttpPut("id")]
         public async Task<IActionResult> Put(int id, Book book)
         {
             if (id != book.Id)
-            {
                 BadRequest("Invalid id");
-            }
 
-            _context.Entry(book).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
 
+            await _bookService.UpdateBookAsync(id, book);
             return NoContent();
         }
 
         [HttpDelete("id")]
         public async Task<IActionResult> Delete(int id)
         {
-            var book = await _context.BookApi.FindAsync(id);
+            var book = await _bookService.GetBookByIdAsync(id);
 
             if (book == null)
                 return NotFound();
 
 
-            _context.BookApi.Remove(book);
-            await _context.SaveChangesAsync();
+            await _bookService.DeleteBookAsync(id);
             return NoContent();
         }
     }
