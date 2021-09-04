@@ -1,6 +1,7 @@
 ﻿using Books.Business.Abstract;
 using Books.Data.Concrete.Ef;
 using Books.Entity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestSharp;
@@ -32,7 +33,7 @@ namespace Books.Api.Controllers
             return await _bookService.GetAllBooksAsync();
         }
 
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
             var book = await _bookService.GetBookByIdAsync(id);
@@ -43,22 +44,19 @@ namespace Books.Api.Controllers
             return Ok(book);
         }
 
-        //[HttpPost]
-        //public IActionResult Post(Book book)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.BookApi.Add(new Book { Author = book.Author, Name = book.Name, Image = book.Image, Publisher = book.Publisher });
-        //        _context.SaveChanges();
-        //    }
+        [HttpPost]
+        public async Task<IActionResult> Post(Book book)
+        {
+            if (ModelState.IsValid)
+               await _bookService.AddBookAsync(book);
 
-        //    else
-        //        return BadRequest("Invalid data");
+            else
+                return BadRequest();
 
-        //    return Ok();
+            return CreatedAtAction(nameof(Get), new { id = book.Id}, book);
 
-        //}
-        [HttpPut("id")]
+        }
+        [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, Book book)
         {
             if (id != book.Id)
@@ -69,7 +67,7 @@ namespace Books.Api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var book = await _bookService.GetBookByIdAsync(id);
@@ -80,6 +78,23 @@ namespace Books.Api.Controllers
 
             await _bookService.DeleteBookAsync(id);
             return NoContent();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> Patch(int id, JsonPatchDocument<Book> patchDocument)
+        {
+            bool isBookExist = await _bookService.PatchUpdateAsync(id, patchDocument);
+            if (isBookExist == false)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
         }
     }
 }

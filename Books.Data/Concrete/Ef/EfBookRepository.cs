@@ -12,9 +12,15 @@ namespace Books.Data.Concrete.Ef
 {
     public class EfBookRepository : EfEntityRepositoryBase<Book, BookContext>, IBookRepository
     {
+        private BookContext _context;
         public EfBookRepository(BookContext context):base(context)
         {
+            _context = context;
+        }
 
+        public async Task PatchUpdateAsync()
+        {
+           await _context.SaveChangesAsync();
         }
     }
 }

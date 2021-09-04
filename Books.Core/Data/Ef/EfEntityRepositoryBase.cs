@@ -21,7 +21,6 @@ namespace Books.Core.Data.Ef
         }
 
 
-
         public void Add(TEntity entity)
         {
             _context.Add(entity);
@@ -65,6 +64,7 @@ namespace Books.Core.Data.Ef
         {
             return await _context.Set<TEntity>().SingleOrDefaultAsync(filter);
         }
+
 
         public void Update(TEntity entity)
         {

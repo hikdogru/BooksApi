@@ -1,6 +1,7 @@
 ﻿using Books.Business.Abstract;
 using Books.Data.Abstract;
 using Books.Entity;
+using Microsoft.AspNetCore.JsonPatch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace Books.Business.Concrete
 
         public async Task DeleteBookAsync(int id)
         {
-            await _bookRepository.DeleteAsync(new Book { Id = id });
+            await _bookRepository.DeleteAsync(await _bookRepository.GetAsync(x => x.Id == id));
         }
 
         public async Task<List<Book>> GetAllBooksAsync()
@@ -36,6 +37,19 @@ namespace Books.Business.Concrete
         public async Task<Book> GetBookByIdAsync(int id)
         {
             return await _bookRepository.GetAsync(x => x.Id == id);
+        }
+
+        public async Task<bool> PatchUpdateAsync(int id, JsonPatchDocument<Book> book)
+        {
+            var entity = await _bookRepository.GetAsync(b=>b.Id == id);
+            if (entity == null)
+            {
+                return false;
+            }
+
+            book.ApplyTo(entity);
+            await _bookRepository.PatchUpdateAsync();
+            return true;
         }
 
         public async Task UpdateBookAsync(int id, Book book)

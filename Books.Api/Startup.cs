@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,15 +40,18 @@ namespace Books.Api
             services.AddScoped<IBookService, BookManager>();
             // Data layer
             services.AddScoped<IBookRepository, EfBookRepository>();
+
+            services.AddControllers().AddNewtonsoftJson(x => { x.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
            
 
             services.AddControllers();
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Books.Api", Version = "v1" });
-            });
+            //services.AddSwaggerGen(c =>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Books.Api", Version = "v1" });
+            //});
 
+            services.AddControllersWithViews();
 
 
         }
@@ -58,8 +62,8 @@ namespace Books.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Books.Api v1"));
+                //app.UseSwagger();
+                //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Books.Api v1"));
             }
 
             app.UseHttpsRedirection();

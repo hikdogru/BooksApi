@@ -10,6 +10,6 @@ namespace Books.Data.Abstract
 {
     public interface IBookRepository: IEntityRepository<Book>
     {
-        
+        Task PatchUpdateAsync();
     }
 }

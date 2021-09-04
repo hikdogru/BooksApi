@@ -1,4 +1,5 @@
 ﻿using Books.Entity;
+using Microsoft.AspNetCore.JsonPatch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace Books.Business.Abstract
         Task AddBookAsync(Book book);
         Task UpdateBookAsync(int id, Book book);
         Task DeleteBookAsync(int id);
+        Task<bool> PatchUpdateAsync(int id, JsonPatchDocument<Book> book);
     }
 }
