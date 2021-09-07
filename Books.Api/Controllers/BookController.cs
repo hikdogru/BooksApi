@@ -1,4 +1,6 @@
-﻿using Books.Business.Abstract;
+﻿using AutoMapper;
+using Books.Api.Dtos;
+using Books.Business.Abstract;
 using Books.Data.Concrete.Ef;
 using Books.Entity;
 using Microsoft.AspNetCore.JsonPatch;
@@ -20,21 +22,37 @@ namespace Books.Api.Controllers
     public class BookController : ControllerBase
     {
         private readonly IBookService _bookService;
+        private readonly IMapper _mapper;
 
-        public BookController(BookContext context, IBookService bookService)
+        public BookController(BookContext context, IBookService bookService, IMapper mapper)
         {
             _bookService = bookService;
+            _mapper = mapper;
         }
 
 
-        [HttpGet]
-        public async Task<List<Book>> Get()
+        [HttpGet("get.{format}"), FormatFilter]
+        public async Task<List<Book>> GetAll()
         {
             return await _bookService.GetAllBooksAsync();
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("get.{format}/filter"), FormatFilter]
+        public async Task<List<Book>> Filtering(string sortByName, string sortById, string q)
+        {
+            var books = new List<Book>();
+            books = await _bookService.SortByAsync(sortByName, sortById);
+
+            if (!string.IsNullOrEmpty(q))
+            {
+                books = await _bookService.SearchAsync(q, books);
+            }
+
+            return books;
+        }
+
+        [HttpGet("{id}", Name = "GetById")]
+        public async Task<IActionResult> GetById(int id)
         {
             var book = await _bookService.GetBookByIdAsync(id);
 
@@ -43,26 +61,30 @@ namespace Books.Api.Controllers
 
             return Ok(book);
         }
-
-        [HttpPost]
-        public async Task<IActionResult> Post(Book book)
+        // Xml and Json support
+        [HttpPost("post.{format}"), FormatFilter]
+        public async Task<IActionResult> Create(BookCreateDto bookCreateDto)
         {
+            var bookModel = _mapper.Map<Book>(bookCreateDto);
             if (ModelState.IsValid)
-               await _bookService.AddBookAsync(book);
+                await _bookService.AddBookAsync(bookModel);
 
             else
                 return BadRequest();
 
-            return CreatedAtAction(nameof(Get), new { id = book.Id}, book);
+            return CreatedAtAction(nameof(GetById), new { id = bookModel.Id }, bookModel);
 
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Book book)
+        public async Task<IActionResult> Update(int id, BookUpdateDto bookUpdateDto)
         {
-            if (id != book.Id)
-                BadRequest("Invalid id");
+            var book = await _bookService.GetBookByIdAsync(id);
+            if (book == null)
+            {
+                return BadRequest();
+            }
 
-
+            _mapper.Map(bookUpdateDto, book);
             await _bookService.UpdateBookAsync(id, book);
             return NoContent();
         }
@@ -71,17 +93,15 @@ namespace Books.Api.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var book = await _bookService.GetBookByIdAsync(id);
-
             if (book == null)
                 return NotFound();
-
 
             await _bookService.DeleteBookAsync(id);
             return NoContent();
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> Patch(int id, JsonPatchDocument<Book> patchDocument)
+        public async Task<IActionResult> PartialUpdate(int id, JsonPatchDocument<Book> patchDocument)
         {
             bool isBookExist = await _bookService.PatchUpdateAsync(id, patchDocument);
             if (isBookExist == false)

@@ -14,8 +14,11 @@ namespace Books.Business.Abstract
         Task<Book> GetBookByIdAsync(int id);
 
         Task AddBookAsync(Book book);
-        Task UpdateBookAsync(int id, Book book);
+        Task<bool> UpdateBookAsync(int id, Book book);
         Task DeleteBookAsync(int id);
         Task<bool> PatchUpdateAsync(int id, JsonPatchDocument<Book> book);
+
+        Task<List<Book>> SortByAsync(string sortByName, string sortById);
+        Task<List<Book>> SearchAsync(string q, List<Book> books);
     }
 }

@@ -1,20 +1,19 @@
-﻿using Books.Core.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Books.Entity
+namespace Books.Api.Dtos
 {
-    public class Book : IEntity
+    public class BookUpdateDto
     {
-        [Key]
-        public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
+        [Required]
         public string Author { get; set; }
+        [Required]
         public string Publisher { get; set; }
         public string Image { get; set; }
-       
     }
 }

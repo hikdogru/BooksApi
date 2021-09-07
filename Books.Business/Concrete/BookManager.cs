@@ -13,10 +13,12 @@ namespace Books.Business.Concrete
     public class BookManager : IBookService
     {
         private readonly IBookRepository _bookRepository;
+        private static List<Book> _books;
 
         public BookManager(IBookRepository bookRepository)
         {
             _bookRepository = bookRepository;
+            _books = _bookRepository.GetAll();
         }
 
         public async Task AddBookAsync(Book book)
@@ -41,7 +43,7 @@ namespace Books.Business.Concrete
 
         public async Task<bool> PatchUpdateAsync(int id, JsonPatchDocument<Book> book)
         {
-            var entity = await _bookRepository.GetAsync(b=>b.Id == id);
+            var entity = await _bookRepository.GetAsync(b => b.Id == id);
             if (entity == null)
             {
                 return false;
@@ -52,10 +54,49 @@ namespace Books.Business.Concrete
             return true;
         }
 
-        public async Task UpdateBookAsync(int id, Book book)
+        public async Task<List<Book>> SearchAsync(string q, List<Book> books)
         {
-            if (id == book.Id)
+            _books = _books.Where(b => b.Name.ToLower().Contains(q.ToLower())
+            || b.Author.ToLower().Contains(q)).ToList();
+            return _books;
+        }
+
+        public Task<List<Book>> SortByAsync(string sortByName = "", string sortById = "")
+        {
+            if (sortByName == "1")
+            {
+                _books = _books.OrderBy(b => b.Name).ToList();
+            }
+            else if (sortByName == "2")
+            {
+                _books = _books.OrderByDescending(b => b.Name).ToList();
+            }
+            else if (sortById == "1")
+            {
+                _books = _books.OrderBy(b => b.Id).ToList();
+            }
+            else if(sortById == "2")
+            {
+                _books = _books.OrderByDescending(b => b.Id).ToList();
+            }
+            else
+            {
+                _books = _books.ToList();
+            }
+
+            return Task.Run(() => _books);
+        }
+
+        public async Task<bool> UpdateBookAsync(int id, Book book)
+        {
+            var entity = await _bookRepository.GetAsync(x => x.Id == id);
+            if (entity != null)
+            {
                 await _bookRepository.UpdateAsync(book);
+                return true;
+            }
+
+            return false;
         }
     }
 }

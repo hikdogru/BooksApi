@@ -34,17 +34,28 @@ namespace Books.Api
         public void ConfigureServices(IServiceCollection services)
         {
             // DbContext
-            services.AddDbContext<BookContext>(option => option.UseSqlServer(Configuration.GetConnectionString("BookConnection")));
+            services.AddDbContext<BookContext>(option => option.UseSqlServer(Configuration.GetConnectionString("BookConnectionAzure")));
 
             // Service layer
             services.AddScoped<IBookService, BookManager>();
             // Data layer
             services.AddScoped<IBookRepository, EfBookRepository>();
 
-            services.AddControllers().AddNewtonsoftJson(x => { x.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
-           
+            // Json Patch Update
+            services.AddControllers().AddNewtonsoftJson(x =>
+            {
+                x.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                // Json formatter
+                x.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
+            });
+
 
             services.AddControllers();
+            // XML
+            services.AddControllers().AddXmlSerializerFormatters();
+
+            // Automapping
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             //services.AddSwaggerGen(c =>
             //{
