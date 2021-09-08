@@ -7,6 +7,26 @@
     a {
         margin-bottom: .5rem;
     }
+
+    input {
+        margin-bottom: .5rem;
+        padding: .5rem;
+    }
+
+    div.row div {
+        border: 5px outset #7b88d7;
+        margin-top: 1rem;
+    }
+
+    #methods {
+        text-align: center;
+    }
+
+    #create input, #btnCreate, #update input, #btnUpdate, #getById input, a, #delete input, #btnDelete {
+        display: block;
+        width: 100%;
+        margin-bottom: .5rem;
+    }
 </style>
 
 
@@ -14,17 +34,22 @@
 
 
 <div class="container">
-    <div class="row" style="margin-top:10%;">
-        <h2 class="text-center">Http Requests</h2>
+    <div class="row" style="margin-top:1rem;">
+        <h1 class="text-center">Http Requests</h1>
 
         <a href="~/api/book/get.json/" class="btn btn-primary">Get - Json format </a>
         <a href="~/api/book/get.xml/" class="btn btn-primary">Get - XML format </a>
-        <div id="getById" style="border:solid 1px;">
+
+
+        <div id="getById">
+            <h3 class="text-center">Get/id Method</h3>
             <input type="text" class="mt-2" name="id" id="id" placeholder="Id" />
             <a href="javascript:void(0)" onclick="getById()" class="btn btn-primary"> Get/id </a>
         </div>
-        <div id="Create">
-            <input type="text" name="id" id="idCreateMethod" placeholder="Id" disabled/>
+
+
+        <div id="create">
+            <h3 class="text-center">Post Method</h3>
             <input type="text" name="name" id="nameCreateMethod" placeholder="Name" />
             <input type="text" name="author" id="authorCreateMethod" placeholder="Author" />
             <input type="text" name="publisher" id="publisherCreateMethod" placeholder="Publisher" />
@@ -32,7 +57,7 @@
             <button class="btn btn-success" id="btnCreate"> Post </button>
         </div>
         <div id="update">
-
+            <h3 class="text-center">Put Method</h3>
             <input type="text" name="id" id="idUpdateMethod" placeholder="Id" />
             <input type="text" name="name" id="name" placeholder="Name" />
             <input type="text" name="author" id="author" placeholder="Author" />
@@ -41,13 +66,22 @@
             <button type="submit" class="btn btn-warning" id="btnUpdate"> Put </button>
 
         </div>
+
         <div id="delete">
-            <input type="text" name="idForDeleteMethod" id="idForDeleteMethod" />
+            <h3 class="text-center">Delete Method</h3>
+            <input type="text" name="idForDeleteMethod" id="idForDeleteMethod" placeholder="Id" />
             <button type="submit" class="btn btn-danger" id="btnDelete"> Delete </button>
         </div>
 
+        <div id="methods">
+            <h2 class="text-center">Methods</h2>
 
-        <h2 class="text-center">Methods</h2>
+            <a href="~/api/book/get.json/filter?sortByName=1" class="btn btn-success">Sort By Name (A-Z)</a>
+            <a href="~/api/book/get.json/filter?sortByName=2" class="btn btn-success">Sort By Name (Z-A)</a>
+
+            <a href="~/api/book/get.json/filter?sortById=1" class="btn btn-success">Sort By Id (Ascending)</a>
+            <a href="~/api/book/get.json/filter?sortById=2" class="btn btn-success">Sort By Id (Descending)</a>
+        </div>
 
     </div>
 </div>
@@ -57,25 +91,34 @@
 <script>
     function getById() {
         let id = document.getElementById("id").value;
-        window.location.href = `/api/book/${id}`;
+        if (id == "")
+            alert("Enter the id");
+        else
+            window.location.href = `/api/book/${id}`;
     }
 
     $("#btnDelete").click(function () {
         let id = document.getElementById("idForDeleteMethod").value;
-        const url = `/api/book/${id}`;
+        if (id == "")
+            alert("Enter the id");
 
-        const deleteMethod = {
-            method: 'Delete', // Method itself
-            headers: {
-                'Content-type': 'application/json; charset=UTF-8' // Indicates the content
-            },
+        else {
+            const url = `/api/book/${id}`;
+
+            const deleteMethod = {
+                method: 'Delete', // Method itself
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8' // Indicates the content
+                },
+            }
+
+            // make the HTTP put request using fetch api
+            fetch(url, deleteMethod)
+                .then(response => response.json())
+                .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
+                .catch(err => console.log(err))
         }
 
-        // make the HTTP put request using fetch api
-        fetch(url, deleteMethod)
-            .then(response => response.json())
-            .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
-            .catch(err => console.log(err))
     });
 
     $("#btnUpdate").click(function () {
@@ -84,27 +127,32 @@
         let author = $("#author").val();;
         let publisher = $("#publisher").val();;
         let image = $("#image").val();;
-        var book = new Object();
-        book.Name = name;
-        book.Author = author;
-        book.Publisher = publisher;
-        book.Image = image;
+        if (id == "" || name == "" || author == "" || publisher == "" || image == "")
+            alert("Enter the required field/fields!")
+        else {
+            var book = new Object();
+            book.Name = name;
+            book.Author = author;
+            book.Publisher = publisher;
+            book.Image = image;
 
-        const putMethod = {
-            method: 'PUT', // Method itself
-            headers: {
-                'Content-type': 'application/json; charset=UTF-8' // Indicates the content
-            },
-            body: JSON.stringify(book) // We send data in JSON format
+            const putMethod = {
+                method: 'PUT', // Method itself
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8' // Indicates the content
+                },
+                body: JSON.stringify(book) // We send data in JSON format
+            }
+
+            const url = `/api/book/${id}`
+
+            // make the HTTP put request using fetch api
+            fetch(url, putMethod)
+                .then(response => response.json())
+                .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
+                .catch(err => console.log(err))
         }
 
-        const url = `/api/book/${id}`
-
-        // make the HTTP put request using fetch api
-        fetch(url, putMethod)
-            .then(response => response.json())
-            .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
-            .catch(err => console.log(err))
     });
 
     $("#btnCreate").click(function () {
@@ -112,27 +160,32 @@
         let author = $("#authorCreateMethod").val();;
         let publisher = $("#publisherCreateMethod").val();;
         let image = $("#imageCreateMethod").val();;
-        var book = new Object();
-        book.Name = name;
-        book.Author = author;
-        book.Publisher = publisher;
-        book.Image = image;
+        if (name == "" || author == "" || publisher == "" || image == "")
+            alert("Enter the required field/fields!")
+        else {
+            var book = new Object();
+            book.Name = name;
+            book.Author = author;
+            book.Publisher = publisher;
+            book.Image = image;
 
-        const postMethod = {
-            method: 'Post', // Method itself
-            headers: {
-                'Content-type': 'application/json; charset=UTF-8' // Indicates the content
-            },
-            body: JSON.stringify(book) // We send data in JSON format
+            const postMethod = {
+                method: 'Post', // Method itself
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8' // Indicates the content
+                },
+                body: JSON.stringify(book) // We send data in JSON format
+            }
+
+            const url = `/api/book/post.json`
+
+            // make the HTTP put request using fetch api
+            fetch(url, postMethod)
+                .then(response => response.json())
+                .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
+                .catch(err => console.log(err))
         }
 
-        const url = `/api/book/post.json`
-
-        // make the HTTP put request using fetch api
-        fetch(url, postMethod)
-            .then(response => response.json())
-            .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
-            .catch(err => console.log(err))
     });
 
 
