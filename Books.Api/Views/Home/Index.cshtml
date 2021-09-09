@@ -54,17 +54,22 @@
             <input type="text" name="author" id="authorCreateMethod" placeholder="Author" />
             <input type="text" name="publisher" id="publisherCreateMethod" placeholder="Publisher" />
             <input type="text" name="image" id="imageCreateMethod" placeholder="Image" />
-            <button class="btn btn-success" id="btnCreate"> Post </button>
+            <button class="btn btn-success" id="btnCreate"
+                    onclick="HttpPutAndPostMethod('Post','', 'nameCreateMethod', 'authorCreateMethod', 'publisherCreateMethod','imageCreateMethod') ">
+                Post
+            </button>
         </div>
         <div id="update">
             <h3 class="text-center">Put Method</h3>
-            <input type="text" name="id" id="idUpdateMethod" placeholder="Id" />
+            <input type="text" name="idUpdateMethod" id="idUpdateMethod" placeholder="Id" />
             <input type="text" name="name" id="name" placeholder="Name" />
             <input type="text" name="author" id="author" placeholder="Author" />
             <input type="text" name="publisher" id="publisher" placeholder="Publisher" />
             <input type="text" name="image" id="image" placeholder="Image" />
-            <button type="submit" class="btn btn-warning" id="btnUpdate"> Put </button>
-
+            <button class="btn btn-warning" id="btnUpdate"
+                    onclick="HttpPutAndPostMethod('Put', 'idUpdateMethod', 'name', 'author', 'publisher', 'image')">
+                Put
+            </button>
         </div>
 
         <div id="delete">
@@ -89,6 +94,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
 <script>
+    // Get/id
     function getById() {
         let id = document.getElementById("id").value;
         if (id == "")
@@ -121,72 +127,55 @@
 
     });
 
-    $("#btnUpdate").click(function () {
-        let id = $("#idUpdateMethod").val();
-        let name = $("#name").val();
-        let author = $("#author").val();;
-        let publisher = $("#publisher").val();;
-        let image = $("#image").val();;
-        if (id == "" || name == "" || author == "" || publisher == "" || image == "")
-            alert("Enter the required field/fields!")
+  
+
+    function HttpPutAndPostMethod(methodName, idInputId, nameInputId, authorInputId, publisherInputId, imageInputId) {
+        let name = $(`#${nameInputId}`).val();
+        let author = $(`#${authorInputId}`).val();
+        let publisher = $(`#${publisherInputId}`).val();
+        let image = $(`#${imageInputId}`).val();
+        let id =   "";
+        let createUrl = `/api/book/post.json`;
+        let updateUrl = ``;
+        
+        if (methodName == "Put") {
+            id = $(`#${idInputId}`).val();
+            if (id == "") {
+                alert("Enter the Id!")
+            }
+            else {
+                updateUrl = `/api/book/${id}`
+            }
+        }
+
+        if (name == "" || author == "" || publisher == "" || image == "") {
+                alert("Enter the required field/fields!")
+        }
+
         else {
-            var book = new Object();
+            let book = new Object();
             book.Name = name;
             book.Author = author;
             book.Publisher = publisher;
             book.Image = image;
 
-            const putMethod = {
-                method: 'PUT', // Method itself
+            const httpMethod = {
+                method: methodName,
                 headers: {
                     'Content-type': 'application/json; charset=UTF-8' // Indicates the content
                 },
-                body: JSON.stringify(book) // We send data in JSON format
+                body: JSON.stringify(book)
             }
 
-            const url = `/api/book/${id}`
-
+            url = (methodName == "Put" ? updateUrl : createUrl);
             // make the HTTP put request using fetch api
-            fetch(url, putMethod)
+            fetch(url, httpMethod)
                 .then(response => response.json())
                 .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
                 .catch(err => console.log(err))
         }
 
-    });
-
-    $("#btnCreate").click(function () {
-        let name = $("#nameCreateMethod").val();
-        let author = $("#authorCreateMethod").val();;
-        let publisher = $("#publisherCreateMethod").val();;
-        let image = $("#imageCreateMethod").val();;
-        if (name == "" || author == "" || publisher == "" || image == "")
-            alert("Enter the required field/fields!")
-        else {
-            var book = new Object();
-            book.Name = name;
-            book.Author = author;
-            book.Publisher = publisher;
-            book.Image = image;
-
-            const postMethod = {
-                method: 'Post', // Method itself
-                headers: {
-                    'Content-type': 'application/json; charset=UTF-8' // Indicates the content
-                },
-                body: JSON.stringify(book) // We send data in JSON format
-            }
-
-            const url = `/api/book/post.json`
-
-            // make the HTTP put request using fetch api
-            fetch(url, postMethod)
-                .then(response => response.json())
-                .then(data => console.log(data)) // Manipulate the data retrieved back, if we want to do something with it
-                .catch(err => console.log(err))
-        }
-
-    });
+    }
 
 
 </script>
